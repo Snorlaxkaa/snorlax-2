@@ -24,6 +24,32 @@ connection = connect_to_database()
 users_dict = get_student(connection) if connection else {}
 
 
+def models_face(client_socket):
+    """處理來自客戶端的人臉辨識數據"""
+    try:
+        # 接收來自客戶端的數據，最大接收1024字節
+        data = client_socket.recv(1024).decode('utf-8')
+        if data:
+            # 讀取到的數據，去除前後的空白字符
+            user_id = data.strip()
+            # 從資料庫中查找對應的用戶名
+            user_name = get_user_from_database(user_id)
+            if user_name:
+                # 如果找到用戶名，構造響應訊息
+                response = f"接收到的用戶ID: {user_id}, 用戶名: {user_name}"
+                print(response)
+                # 發送響應訊息給客戶端
+                client_socket.sendall(response.encode('utf-8'))
+            else:
+                # 如果用戶ID不存在於資料庫中，構造響應訊息
+                response = f"用戶ID: {user_id} 不存在於資料庫中"
+                print(response)
+                # 發送響應訊息給客戶端
+                client_socket.sendall(response.encode('utf-8'))
+    finally:
+        # 確保無論是否發生異常，客戶端的socket都會被關閉
+        client_socket.close()
+
 def listen_and_recognize(retry=False):
     """監聽並識別用戶的語音輸入，返回識別的文本"""
     recognizer = sr.Recognizer()
@@ -125,12 +151,6 @@ def get_time():
     current_time = time.strftime('%Y年%m月%d日 %H點%M分')
     return f"現在時間是{current_time}"
 
-def members():
-    """回答實驗室成員"""
-    speak_and_print("我們實驗室的有：", wait=True)
-    for(user_id, user_name) in users_dict.items():
-        speak_and_print(f"用戶ID: {user_id}, 用戶名: {user_name}", wait=True)
-    #這裡要的話要再從資料庫中取出成員名單
     
 
 def Director(user_name):
@@ -187,7 +207,15 @@ def main():
         user_name = "訪客"
         chat_with_user(user_name)  
       
-  
+  #
 if __name__ == "__main__":
-        main()
-        start_server()
+    # 使用線程來啟動伺服器，確保它在後台運行
+    server_thread = threading.Thread(target=start_server)
+    server_thread.daemon = True  # 確保線程在主程式結束時能夠自動結束
+    server_thread.start()
+    
+    #
+    main()
+
+    # 等待伺服器線程結束
+    server_thread.join()
