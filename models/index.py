@@ -9,9 +9,9 @@ def connect_to_database():
         connection = pymysql.connect(
             host='127.0.0.1',  # 數據庫服務器地址
             user='root',       # 數據庫登錄使用者名
-            password='0000',   # 數據庫登錄密碼
+            password='password',   # 數據庫登錄密碼
             database='speekproject',   # 要連接的數據庫名
-            port=3307,         # 數據庫端口號，MySQL預設為3306，根據實際情況進行修改
+            port=3310,         # 數據庫端口號，MySQL預設為3306，根據實際情況進行修改
             charset='utf8mb4'  # 字符集
         )
         print("成功連接至 MySQL 數據庫")
@@ -28,7 +28,7 @@ def get_student(connection):
     try:
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:  # 使用DictCursor
             # 確保此處的查詢是按照您的表結構來的
-            sql = "SELECT StudentID, Name FROM test;"
+            sql = "SELECT StudentID, Name FROM students;"
             cursor.execute(sql)
             results = cursor.fetchall()
             return {str(result['StudentID']): result['Name'] for result in results}

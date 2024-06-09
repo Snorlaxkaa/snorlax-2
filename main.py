@@ -1,10 +1,10 @@
 import sys
 from gtts import gTTS # 文本轉語音函式庫 
-from anyio import run # 需要安裝anyio庫
+from anyio import run 
 from pynput import keyboard
 import speech_recognition as sr
-import os   # 導入os模塊
-import re   # 導入re模塊
+import os   
+import re   #
 import playsound  # 用於播放音頻文件
 from pynput import keyboard
 from pprint import pprint  # 導入pprint函數
@@ -18,7 +18,8 @@ import time
 import speech_recognition as sr # 語音數據轉換為文本
 from models.index import connect_to_database, get_student   #資料庫
 from Snorlax.spack import speak_and_print # 語音合成
-from Weather import get_weather # 天氣API
+from Snorlax.Weather import get_weather # 天氣API
+from Snorlax.tcp_server import user_face, start_server # TCP伺服器
 connection = connect_to_database()
 users_dict = get_student(connection) if connection else {}
 
@@ -30,7 +31,6 @@ def listen_and_recognize(retry=False):
         recognizer.adjust_for_ambient_noise(source)
         print("請說話...")
         audio = recognizer.listen(source)
-        print(audio)
     try:
         text = recognizer.recognize_google(audio, language='zh-TW')
         print("識別結果:", text)  # 印出識別結果ㄉ
@@ -53,7 +53,7 @@ def chinese_number(cn_number):
 
 def u_input_(input_text):
     """處理使用者輸入"""
-    input_text = chinese_number(input_text)  # 將中文數字轉換為阿拉伯數字
+    input_text = chinese_number(input_text) # 轉換中文數字
     user_id_match = re.search(r'\d+', input_text)
     user_id = user_id_match.group() if user_id_match else None
     
@@ -190,3 +190,4 @@ def main():
   
 if __name__ == "__main__":
         main()
+        start_server()
